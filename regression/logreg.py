@@ -29,6 +29,7 @@ class BaseRegressor():
         
     def calculate_gradient(self, y_true, X):
         raise NotImplementedError
+
     
     def train_model(self, X_train, y_train, X_val, y_val):
 
@@ -129,7 +130,21 @@ class LogisticRegressor(BaseRegressor):
         Returns: 
             The predicted labels (y_pred) for given X.
         """
-        pass
+        # Make sure X is numpy array and 2D
+        # X = np.array(X)
+        # if X.ndim == 1:
+        #     X = X.reshape(1, -1)
+
+        # Pad bias column if caller passed unpadded features
+        if X.shape[1] == self.num_feats:
+            # print("Padding bias column in make_prediction")
+            X = np.hstack([X, np.ones((X.shape[0], 1))])
+
+        # lin = np.dot(X, self.W)
+        lin= X.dot(self.W)
+        # Sigmoid activation
+        y_pred = 1 / (1 + np.exp(-lin))
+        return y_pred
     
     def loss_function(self, y_true, y_pred) -> float:
         """
@@ -143,7 +158,17 @@ class LogisticRegressor(BaseRegressor):
         Returns: 
             The mean loss (a single number).
         """
-        pass
+        # Convert inputs to arrays
+        # y_true = np.array(y_true).flatten()
+        # y_pred = np.array(y_pred).flatten()
+
+        # clip to avoid log(0)
+        eps = 1e-15
+        y_pred = np.clip(y_pred, eps, 1 - eps)
+
+        # binary cross-entropy 
+        bce = -(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+        return np.mean(bce)
         
     def calculate_gradient(self, y_true, X) -> np.ndarray:
         """
@@ -157,4 +182,25 @@ class LogisticRegressor(BaseRegressor):
         Returns: 
             Vector of gradients.
         """
-        pass
+       
+        # Ensure arrays and shapes
+        X = np.array(X)
+        if X.ndim == 1:
+            X = X.reshape(1, -1)
+
+        # If X doesn't include bias column, pad with ones so gradient matches W length
+        if X.shape[1] == self.num_feats:
+            X = np.hstack([X, np.ones((X.shape[0], 1))])
+        elif X.shape[1] != self.num_feats + 1:
+            raise ValueError(f"Expected input with {self.num_feats} or {self.num_feats+1} columns, got {X.shape[1]}")
+
+        y_true = np.array(y_true).flatten()
+
+        # Predictions (make_prediction will accept already-padded X)
+        y_pred = self.make_prediction(X)
+
+        n = X.shape[0]
+        diff = (y_pred - y_true).reshape(-1, 1)
+        grad = (X.T.dot(diff)).flatten() / n
+        return grad
+

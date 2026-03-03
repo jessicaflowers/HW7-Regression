@@ -1,3 +1,6 @@
+[![BuildStatus](https://github.com/jessicaflowers/HW7-Regression/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/jessicaflowers/HW7-Regression/actions/workflows/test.yml)
+
+
 # HW 7: logistic regression
 
 In this assignment, you'll implement a classifier using logistic regression, optimized with gradient descent.
