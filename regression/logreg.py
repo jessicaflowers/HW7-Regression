@@ -130,17 +130,11 @@ class LogisticRegressor(BaseRegressor):
         Returns: 
             The predicted labels (y_pred) for given X.
         """
-        # Make sure X is numpy array and 2D
-        # X = np.array(X)
-        # if X.ndim == 1:
-        #     X = X.reshape(1, -1)
-
         # Pad bias column if caller passed unpadded features
         if X.shape[1] == self.num_feats:
             # print("Padding bias column in make_prediction")
             X = np.hstack([X, np.ones((X.shape[0], 1))])
 
-        # lin = np.dot(X, self.W)
         lin= X.dot(self.W)
         # Sigmoid activation
         y_pred = 1 / (1 + np.exp(-lin))
@@ -158,10 +152,6 @@ class LogisticRegressor(BaseRegressor):
         Returns: 
             The mean loss (a single number).
         """
-        # Convert inputs to arrays
-        # y_true = np.array(y_true).flatten()
-        # y_pred = np.array(y_pred).flatten()
-
         # clip to avoid log(0)
         eps = 1e-15
         y_pred = np.clip(y_pred, eps, 1 - eps)
@@ -182,8 +172,6 @@ class LogisticRegressor(BaseRegressor):
         Returns: 
             Vector of gradients.
         """
-       
-        # Ensure arrays and shapes
         X = np.array(X)
         if X.ndim == 1:
             X = X.reshape(1, -1)
@@ -196,11 +184,11 @@ class LogisticRegressor(BaseRegressor):
 
         y_true = np.array(y_true).flatten()
 
-        # Predictions (make_prediction will accept already-padded X)
+        # make prediction for the gradient calc
         y_pred = self.make_prediction(X)
 
         n = X.shape[0]
         diff = (y_pred - y_true).reshape(-1, 1)
         grad = (X.T.dot(diff)).flatten() / n
-        return grad
+        return grad 
 
